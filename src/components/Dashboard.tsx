@@ -1,0 +1,135 @@
+import React, { useState, useEffect } from "react";
+import Header from "./Header";
+import HabitForm from "./HabitForm";
+import HabitList from "./HabitList";
+import ProgressBar from "./ProgressBar";
+import CalendarView from "./CalendarView";
+import { calculateTodayCompletion } from "../utils/dateUtils";
+import { AppState, Habit } from "../types";
+
+interface DashboardProps {
+  theme: AppState["theme"];
+  onToggleTheme: () => void;
+}
+
+const Dashboard: React.FC<DashboardProps> = ({ theme, onToggleTheme }) => {
+  const [habits, setHabits] = useState<Habit[]>([]);
+  const [todayPercentage, setTodayPercentage] = useState(0);
+
+  const token = localStorage.getItem("token");
+
+  useEffect(() => {
+    fetchHabits();
+  }, []);
+
+  useEffect(() => {
+    setTodayPercentage(calculateTodayCompletion(habits));
+  }, [habits]);
+
+  const fetchHabits = async () => {
+    try {
+      const res = await fetch("http://localhost:5000/api/habits", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+
+      // Map backend _id to id and dates to completedDates
+      const mappedHabits: Habit[] = data.map((habit: any) => ({
+        id: habit._id,
+        name: habit.name,
+        createdAt: habit.createdAt,
+        completedDates: habit.dates,
+        color: habit.color || undefined,
+      }));
+
+      setHabits(mappedHabits);
+    } catch (err) {
+      console.error("Failed to fetch habits", err);
+    }
+  };
+
+  const handleAddHabit = async (name: string) => {
+    try {
+      const res = await fetch("http://localhost:5000/api/habits", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ name }),
+      });
+      const habit = await res.json();
+
+      const newHabit: Habit = {
+        id: habit._id,
+        name: habit.name,
+        createdAt: habit.createdAt,
+        completedDates: habit.dates,
+        color: habit.color || undefined,
+      };
+
+      setHabits((prev) => [...prev, newHabit]);
+    } catch (err) {
+      console.error("Failed to add habit", err);
+    }
+  };
+
+  const handleDeleteHabit = async (id: string) => {
+    try {
+      await fetch(`http://localhost:5000/api/habits/${id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setHabits((prev) => prev.filter((h) => h.id !== id));
+    } catch (err) {
+      console.error("Failed to delete habit", err);
+    }
+  };
+
+  const handleToggleHabit = async (id: string, date: string) => {
+    try {
+      const res = await fetch(`http://localhost:5000/api/habits/${id}/toggle`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ date }),
+      });
+
+      const updated = await res.json();
+
+      const updatedHabit: Habit = {
+        id: updated._id,
+        name: updated.name,
+        createdAt: updated.createdAt,
+        completedDates: updated.dates,
+        color: updated.color || undefined,
+      };
+
+      setHabits((prev) =>
+        prev.map((h) => (h.id === updatedHabit.id ? updatedHabit : h))
+      );
+    } catch (err) {
+      console.error("Failed to toggle habit", err);
+    }
+  };
+
+  return (
+    <main className="container mx-auto px-4 sm:px-6 pb-12 max-w-3xl">
+      <HabitForm onAddHabit={handleAddHabit} />
+      <ProgressBar percentage={todayPercentage} />
+      <CalendarView habits={habits} onToggleHabit={handleToggleHabit} />
+      <h2 className="text-lg font-semibold mb-4 text-gray-800 dark:text-white">
+        My Habits
+      </h2>
+      <HabitList
+        habits={habits}
+        onToggleHabit={handleToggleHabit}
+        onDeleteHabit={handleDeleteHabit}
+      />
+    </main>
+  );
+};
+
+export default Dashboard;
