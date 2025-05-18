@@ -14,7 +14,7 @@ const app = express();
 // const cors = require("cors");
 app.use(
   cors({
-    origin: "http://localhost:5173", // React frontend origin
+    origin: `${process.env.CLIENT_ORIGIN}`, // React frontend origin
     credentials: true,
   })
 ); 

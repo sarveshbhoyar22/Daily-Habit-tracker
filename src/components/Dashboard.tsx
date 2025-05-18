@@ -36,9 +36,10 @@ const Dashboard: React.FC<DashboardProps> = ({ theme, onToggleTheme }) => {
     setTodayPercentage(calculateTodayCompletion(habits));
   }, [habits]);
 
+  const url = import.meta.env.VITE_BASE_URL;
   const fetchHabits = async () => {
     try {
-      const res = await fetch("http://localhost:5000/api/habits", {
+      const res = await fetch(`${url}/api/habits`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
@@ -59,7 +60,7 @@ const Dashboard: React.FC<DashboardProps> = ({ theme, onToggleTheme }) => {
 
   const handleAddHabit = async (name: string) => {
     try {
-      const res = await fetch("http://localhost:5000/api/habits", {
+      const res = await fetch(`${url}/api/habits`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -84,7 +85,7 @@ const Dashboard: React.FC<DashboardProps> = ({ theme, onToggleTheme }) => {
 
   const handleDeleteHabit = async (id: string) => {
     try {
-      await fetch(`http://localhost:5000/api/habits/${id}`, {
+      await fetch(`${url}/api/habits/${id}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -96,7 +97,7 @@ const Dashboard: React.FC<DashboardProps> = ({ theme, onToggleTheme }) => {
 
   const handleToggleHabit = async (id: string, date: string) => {
     try {
-      const res = await fetch(`http://localhost:5000/api/habits/${id}/toggle`, {
+      const res = await fetch(`${url}/api/habits/${id}/toggle`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
