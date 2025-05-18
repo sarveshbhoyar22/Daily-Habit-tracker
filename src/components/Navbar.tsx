@@ -1,29 +1,31 @@
-import React from "react";
-import { Link, useLocation } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Menu, X, CheckSquare } from "lucide-react";
 import ThemeToggle from "./ThemeToggle";
+import { toast } from "react-toastify";
 
 interface NavbarProps {
   theme: "light" | "dark";
   onToggleTheme: () => void;
-  isLoggedIn: boolean;
-  onLogout: () => void;
 }
 
-const Navbar: React.FC<NavbarProps> = ({
-  theme,
-  onToggleTheme,
-  isLoggedIn,
-  onLogout,
-}) => {
-  const [isMenuOpen, setIsMenuOpen] = React.useState(false);
+const Navbar: React.FC<NavbarProps> = ({ theme, onToggleTheme }) => {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    setIsLoggedIn(!!token);
+  }, [location.pathname]);
 
   const isActive = (path: string) => location.pathname === path;
 
   const navLinks = [
-    { path: "/", label: "Home" },
-    { path: "/dashboard", label: "Dashboard" },
+    ...(isLoggedIn
+      ? [{ path: "/dashboard", label: "Dashboard" }]
+      : [{ path: "/", label: "Home" }]),
     { path: "/about", label: "About" },
   ];
 
@@ -36,6 +38,13 @@ const Navbar: React.FC<NavbarProps> = ({
 
   const authLinkBase =
     "px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200";
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    setIsLoggedIn(false);
+    toast.success("Logged out successfully!");
+    navigate("/login");
+  };
 
   return (
     <nav className="bg-white dark:bg-gray-800 shadow-sm">
@@ -60,23 +69,15 @@ const Navbar: React.FC<NavbarProps> = ({
             ))}
 
             {!isLoggedIn ? (
-              <>
-                <Link
-                  to="/login"
-                  className={`${authLinkBase} text-gray-600 dark:text-gray-300 hover:text-purple-600 dark:hover:text-purple-400`}
-                >
-                  Login
-                </Link>
-                <Link
-                  to="/signup"
-                  className={`${authLinkBase} bg-purple-600 text-white hover:bg-purple-700`}
-                >
-                  Sign Up
-                </Link>
-              </>
+              <Link
+                to="/signup"
+                className={`${authLinkBase} bg-purple-600 text-white hover:bg-purple-700`}
+              >
+                Sign Up
+              </Link>
             ) : (
               <button
-                onClick={onLogout}
+                onClick={handleLogout}
                 className={`${authLinkBase} bg-red-600 text-white hover:bg-red-700`}
               >
                 Logout
@@ -115,29 +116,26 @@ const Navbar: React.FC<NavbarProps> = ({
           ))}
 
           {!isLoggedIn ? (
-            <>
-              <Link
-                to="/login"
-                onClick={() => setIsMenuOpen(false)}
-                className={`${authLinkBase.replace("text-sm", "text-base")} text-gray-600 dark:text-gray-300 hover:text-purple-600 dark:hover:text-purple-400`}
-              >
-                Login
-              </Link>
-              <Link
-                to="/signup"
-                onClick={() => setIsMenuOpen(false)}
-                className={`${authLinkBase.replace("text-sm", "text-base")} bg-purple-600 text-white hover:bg-purple-700`}
-              >
-                Sign Up
-              </Link>
-            </>
+            <Link
+              to="/signup"
+              onClick={() => setIsMenuOpen(false)}
+              className={`${authLinkBase.replace(
+                "text-sm",
+                "text-base"
+              )} bg-purple-600 text-white hover:bg-purple-700`}
+            >
+              Sign Up
+            </Link>
           ) : (
             <button
               onClick={() => {
                 setIsMenuOpen(false);
-                onLogout();
+                handleLogout();
               }}
-              className={`${authLinkBase.replace("text-sm", "text-base")} bg-red-600 text-white hover:bg-red-700 w-full text-left`}
+              className={`${authLinkBase.replace(
+                "text-sm",
+                "text-base"
+              )} bg-red-600 text-white hover:bg-red-700 w-full text-left`}
             >
               Logout
             </button>

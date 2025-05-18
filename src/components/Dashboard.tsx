@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import Header from "./Header";
+import { useNavigate } from "react-router-dom";
 import HabitForm from "./HabitForm";
 import HabitList from "./HabitList";
 import ProgressBar from "./ProgressBar";
@@ -15,12 +15,22 @@ interface DashboardProps {
 const Dashboard: React.FC<DashboardProps> = ({ theme, onToggleTheme }) => {
   const [habits, setHabits] = useState<Habit[]>([]);
   const [todayPercentage, setTodayPercentage] = useState(0);
+  const navigate = useNavigate();
 
   const token = localStorage.getItem("token");
 
+  // Redirect to login if not authenticated
   useEffect(() => {
-    fetchHabits();
-  }, []);
+    if (!token) {
+      navigate("/login");
+    }
+  }, [token, navigate]);
+
+  useEffect(() => {
+    if (token) {
+      fetchHabits();
+    }
+  }, [token]);
 
   useEffect(() => {
     setTodayPercentage(calculateTodayCompletion(habits));
@@ -33,7 +43,6 @@ const Dashboard: React.FC<DashboardProps> = ({ theme, onToggleTheme }) => {
       });
       const data = await res.json();
 
-      // Map backend _id to id and dates to completedDates
       const mappedHabits: Habit[] = data.map((habit: any) => ({
         id: habit._id,
         name: habit.name,
@@ -59,7 +68,6 @@ const Dashboard: React.FC<DashboardProps> = ({ theme, onToggleTheme }) => {
         body: JSON.stringify({ name }),
       });
       const habit = await res.json();
-
       const newHabit: Habit = {
         id: habit._id,
         name: habit.name,
@@ -96,9 +104,7 @@ const Dashboard: React.FC<DashboardProps> = ({ theme, onToggleTheme }) => {
         },
         body: JSON.stringify({ date }),
       });
-
       const updated = await res.json();
-
       const updatedHabit: Habit = {
         id: updated._id,
         name: updated.name,
@@ -116,7 +122,7 @@ const Dashboard: React.FC<DashboardProps> = ({ theme, onToggleTheme }) => {
   };
 
   return (
-    <main className="container mx-auto px-4 sm:px-6 pb-12 max-w-3xl">
+    <main className="container mx-auto my-5 px-4 sm:px-6 pb-12 max-w-3xl">
       <HabitForm onAddHabit={handleAddHabit} />
       <ProgressBar percentage={todayPercentage} />
       <CalendarView habits={habits} onToggleHabit={handleToggleHabit} />

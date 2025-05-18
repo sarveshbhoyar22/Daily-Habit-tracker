@@ -1,16 +1,17 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { LogIn } from 'lucide-react';
-
+import { useNavigate } from 'react-router-dom';
 const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-
+  const navigate = useNavigate();
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
+    const url = import.meta.env.VITE_BASE_URL;
+    
     try {
-      const res = await fetch("http://localhost:5000/api/auth/login", {
+      const res = await fetch(`${url}/api/auth/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -28,7 +29,7 @@ const LoginPage: React.FC = () => {
       localStorage.setItem("token", data.token);
       console.log("Login successful:", data);
       // Optionally redirect:
-      // navigate('/dashboard');
+      navigate('/dashboard');
     } catch (err) {
       console.error("Login error:", err);
       alert("Server error during login");

@@ -9,6 +9,7 @@ import MissionPage from "./pages/MissionPage";
 import Dashboard from "./components/Dashboard";
 import { loadState, saveState } from "./utils/storageUtils";
 import { AppState } from "./types";
+import { ToastContainer } from "react-toastify";
 
 function App() {
   const defaultState: AppState = { habits: [], theme: "light" };
@@ -39,6 +40,8 @@ function App() {
   };
 
   return (
+    <>
+    <ToastContainer />
     <Router>
       <div className="min-h-screen bg-gray-100 dark:bg-gray-900 transition-colors duration-200">
         <Navbar theme={appState.theme} onToggleTheme={handleToggleTheme} />
@@ -62,6 +65,7 @@ function App() {
         </Routes>
       </div>
     </Router>
+            </>
   );
 }
 

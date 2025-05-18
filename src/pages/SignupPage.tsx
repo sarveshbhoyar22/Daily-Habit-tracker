@@ -13,7 +13,7 @@ const SignupPage: React.FC = () => {
     password: '',
     confirmPassword: '',
   });
-  
+  const url = import.meta.env.VITE_BASE_URL;
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -25,7 +25,7 @@ const SignupPage: React.FC = () => {
     }
 
     try {
-      const res = await fetch("http://localhost:5000/api/auth/signup", {
+      const res = await fetch(`${url}/api/auth/signup`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
