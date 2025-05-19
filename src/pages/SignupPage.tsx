@@ -42,7 +42,7 @@ const SignupPage: React.FC = () => {
 
       localStorage.setItem("token", data.token);
       console.log("Signup successful:", data);
-      navigate("/dashboard"); // Optional
+      navigate("/dashboard"); // Optional 
     } catch (err) {
       console.error("Signup error:", err);
       alert("Server error during signup");

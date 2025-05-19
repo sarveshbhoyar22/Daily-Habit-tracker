@@ -2,15 +2,20 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { LogIn } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const url = import.meta.env.VITE_BASE_URL;
     
     try {
+      if(loading){
+        toast.loading("Logging in...");
+      }
       const res = await fetch(`${url}/api/auth/login`, {
         method: "POST",
         headers: {
@@ -18,9 +23,13 @@ const LoginPage: React.FC = () => {
         },
         body: JSON.stringify({ email, password }),
       });
-
       const data = await res.json();
-
+      if(data){
+        setLoading(false);
+        toast.dismiss();
+      }
+      
+      toast.success("Login successful!");
       if (!res.ok) {
         alert(data.error || "Login failed");
         return;

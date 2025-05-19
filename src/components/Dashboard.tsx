@@ -6,6 +6,8 @@ import ProgressBar from "./ProgressBar";
 import CalendarView from "./CalendarView";
 import { calculateTodayCompletion } from "../utils/dateUtils";
 import { AppState, Habit } from "../types";
+import { toast } from "react-toastify";
+import { set } from "date-fns";
 
 interface DashboardProps {
   theme: AppState["theme"];
@@ -15,6 +17,7 @@ interface DashboardProps {
 const Dashboard: React.FC<DashboardProps> = ({ theme, onToggleTheme }) => {
   const [habits, setHabits] = useState<Habit[]>([]);
   const [todayPercentage, setTodayPercentage] = useState(0);
+  const[loading, setLoading] = React.useState(true);
   const navigate = useNavigate();
 
   const token = localStorage.getItem("token");
@@ -39,9 +42,14 @@ const Dashboard: React.FC<DashboardProps> = ({ theme, onToggleTheme }) => {
   const url = import.meta.env.VITE_BASE_URL;
   const fetchHabits = async () => {
     try {
+      setLoading(true);
+      if (loading) {
+        toast.loading("loading Habit...");
+      }
       const res = await fetch(`${url}/api/habits`, {
         headers: { Authorization: `Bearer ${token}` },
       });
+      
       const data = await res.json();
 
       const mappedHabits: Habit[] = data.map((habit: any) => ({
@@ -51,15 +59,26 @@ const Dashboard: React.FC<DashboardProps> = ({ theme, onToggleTheme }) => {
         completedDates: habit.dates,
         color: habit.color || undefined,
       }));
-
+      if(mappedHabits){
+        setLoading(false);
+        toast.dismiss();
+      }
       setHabits(mappedHabits);
     } catch (err) {
       console.error("Failed to fetch habits", err);
+    }finally{
+      setLoading(false);
+      
     }
   };
 
   const handleAddHabit = async (name: string) => {
     try {
+      setLoading(true);
+      if(loading){
+        toast.loading("Adding Habit...");
+      }
+        
       const res = await fetch(`${url}/api/habits`, {
         method: "POST",
         headers: {
@@ -77,14 +96,23 @@ const Dashboard: React.FC<DashboardProps> = ({ theme, onToggleTheme }) => {
         color: habit.color || undefined,
       };
 
+      if(newHabit){
+        setLoading(false);  
+        toast.dismiss();
+      }
+
       setHabits((prev) => [...prev, newHabit]);
     } catch (err) {
       console.error("Failed to add habit", err);
+    }finally{
+      setLoading(false);
+      
     }
   };
 
   const handleDeleteHabit = async (id: string) => {
     try {
+      
       await fetch(`${url}/api/habits/${id}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },

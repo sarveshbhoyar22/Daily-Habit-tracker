@@ -13,7 +13,7 @@ const app = express();
 // app.use(cors());
 // const cors = require("cors");
 app.use(
-  cors({
+  cors({ 
     origin: `${process.env.CLIENT_ORIGIN}`, // React frontend origin
     credentials: true,
   })
